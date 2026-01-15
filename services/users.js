@@ -17,6 +17,8 @@ exports.createUser = async (req, res, next) => {
 
 
 const User = require('../models/user');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // Callback pour récupérer un utilisateur par son nom
 exports.getByName = async (req, res, next) => {
@@ -104,4 +106,89 @@ exports.deleteUser = async (req, res, next) => {
     } catch (error) {
         return res.status(501).json(error);
     }
+}
+
+// Callback pour l'authentification d'un utilisateur
+exports.authenticate = async (req, res, next) => {
+    const { email, password } = req.body;
+
+    try {
+        let user = await User.findOne({email: email}, '-__v -createdAt -updatedAt');
+
+        if (user) {
+            bcrypt.compare(password, user.password, function(err, result) {
+                if (err) {
+                    throw new Error('Authentication_failed');
+                }
+                if (result) {
+                    delete user._doc.password;
+
+                    const expireIn = 24 * 60 * 60;
+                    const token = jwt.sign({
+                        user: user
+                    },
+                    SECRET_KEY,
+                    {
+                        expiresIn: expireIn
+                    });
+
+                    res.header('Authorization', 'Bearer ' + token);
+
+                    return res.status(200).json('Authentication_successful');
+                }
+
+                return res.status(403).json('Authentication_failed');
+            });
+        } else {
+            return res.status(404).json('User_not_found');
+        }
+    } catch (error) {
+        return res.status(501).json(error);
+    }
+}
+
+// Callback pour gérer la connexion d'un utilisateur
+exports.login = async (req, res, next) => {
+
+    const { email, password } = req.body;
+
+    try {
+        let user = await User.findOne({email: email}, '-__v -createdAt -updatedAt');
+
+        if (user) {
+            bcrypt.compare(password, user.password, function(err, result) {
+                if (err) {
+                    throw new Error('Login_failed');
+                }
+                if (result) {
+                    delete user._doc.password;
+
+                    const expireIn = 24 * 60 * 60;
+                    const token = jwt.sign({
+                        user: user
+                    },
+                    SECRET_KEY,
+                    {
+                        expiresIn: expireIn
+                    });
+
+                    res.header('Authorization', 'Bearer ' + token);
+
+                    return res.status(200).json('Login_successful');
+                }
+                return res.status(403).json('Login_failed');
+            });
+        } else {
+            return res.status(404).json('User_not_found');
+        }
+    } catch (error) {
+        return res.status(501).json(error);
+    }
+}
+
+// Callback pour gérer la déconnexion d'un utilisateur
+exports.logout = async (req, res, next) => {
+
+    // Pour la déconnexion, il suffit de supprimer le token côté client
+    return res.status(200).json('Logout_successful');
 }
