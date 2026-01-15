@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const userRoute = require('../routes/user');
+const userRoute = require('../routes/users');
 
 router.get('/', async (req, res) => {
     res.status(200).json({
