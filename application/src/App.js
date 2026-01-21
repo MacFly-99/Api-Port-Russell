@@ -1,141 +1,159 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Pages publiques
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
 
-// Pages CRUD Catways
+// Pages protégées
+import Dashboard from './pages/Dashboard';
 import CatwaysList from './pages/CatwaysList';
 import CatwayDetail from './pages/CatwayDetail';
 import CatwayForm from './pages/CatwayForm';
-
-// Pages CRUD Réservations
 import ReservationsList from './pages/ReservationsList';
 import ReservationDetail from './pages/ReservationDetail';
 import ReservationForm from './pages/ReservationForm';
-
-// Pages CRUD Utilisateurs
 import UsersList from './pages/UsersList';
 import UserDetail from './pages/UserDetail';
 import UserForm from './pages/UserForm';
 
-// Page 404
+// 404
 import NotFound from './pages/NotFound';
 
-// Composant pour routes protégées (à implémenter plus tard)
-const ProtectedRoute = ({ children }) => {
-  // Pour l'instant on laisse passer tout le monde
-  // Plus tard : vérifier token/localStorage
-  return children;
-  // Exemple futur :
-  // const isAuthenticated = !!localStorage.getItem('token');
-  // return isAuthenticated ? children : <Navigate to="/login" replace />;
-};
+// Layout + protection
+import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Pages publiques */}
+        {/* Publiques */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Routes protégées */}
+        {/* Protégées avec Layout */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Layout>
+                <Dashboard />
+              </Layout>
             </ProtectedRoute>
           }
         />
 
-        {/* CRUD Catways */}
         <Route
           path="/catways"
           element={
             <ProtectedRoute>
-              <CatwaysList />
+              <Layout>
+                <CatwaysList />
+              </Layout>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/catways/:id"
           element={
             <ProtectedRoute>
-              <CatwayDetail />
+              <Layout>
+                <CatwayDetail />
+              </Layout>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/catways/new"
           element={
             <ProtectedRoute>
-              <CatwayForm />
+              <Layout>
+                <CatwayForm />
+              </Layout>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/catways/:id/edit"
           element={
             <ProtectedRoute>
-              <CatwayForm />
+              <Layout>
+                <CatwayForm />
+              </Layout>
             </ProtectedRoute>
           }
         />
 
-        {/* CRUD Réservations */}
         <Route
           path="/reservations"
           element={
             <ProtectedRoute>
-              <ReservationsList />
+              <Layout>
+                <ReservationsList />
+              </Layout>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/reservations/:id"
           element={
             <ProtectedRoute>
-              <ReservationDetail />
+              <Layout>
+                <ReservationDetail />
+              </Layout>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/reservations/new"
           element={
             <ProtectedRoute>
-              <ReservationForm />
+              <Layout>
+                <ReservationForm />
+              </Layout>
             </ProtectedRoute>
           }
         />
 
-        {/* CRUD Utilisateurs */}
         <Route
           path="/users"
           element={
             <ProtectedRoute>
-              <UsersList />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/users/:id"
-          element={
-            <ProtectedRoute>
-              <UserDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/users/new"
-          element={
-            <ProtectedRoute>
-              <UserForm />
+              <Layout>
+                <UsersList />
+              </Layout>
             </ProtectedRoute>
           }
         />
 
-        {/* Page Not_Found (404) */}
+        <Route
+          path="/users/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <UserDetail />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users/new"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <UserForm />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
