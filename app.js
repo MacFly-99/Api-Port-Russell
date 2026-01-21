@@ -1,10 +1,11 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const cors = require('cors');
+const cors = require('cors')
 
 const indexRouter = require('./routes/index');
-const mongodb = require('./db/mongodb');
+
+const mongodb = require('./db/mongo');
 
 const path = require('path');
 
