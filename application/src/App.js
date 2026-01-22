@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './protection/Authentication';
 
 // Pages publiques
 import Home from './pages/Home';
@@ -16,146 +17,140 @@ import UsersList from './pages/UsersList';
 import UserDetail from './pages/UserDetail';
 import UserForm from './pages/UserForm';
 
-// 404
-import NotFound from './pages/NotFound';
-
-// Layout + protection
+import ProtectedRoute from './protection/ProtectedRoute';
 import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* Publiques */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
+      <AuthProvider>
+        <Routes>
+          {/* Publiques */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* Protégées avec Layout */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Dashboard />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+          {/* Protégées avec Layout */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/catways"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CatwaysList />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+          {/* Catways */}
+          <Route
+            path="/catways"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CatwaysList />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catways/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CatwayDetail />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catways/new"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CatwayForm />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catways/:id/edit"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CatwayForm />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/catways/:id"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CatwayDetail />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+          {/* Réservations */}
+          <Route
+            path="/reservations"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ReservationsList />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reservations/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ReservationDetail />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reservations/new"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ReservationForm />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/catways/new"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CatwayForm />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+          {/* Utilisateurs */}
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UsersList />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UserDetail />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users/new"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UserForm />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/catways/:id/edit"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CatwayForm />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/reservations"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ReservationsList />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/reservations/:id"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ReservationDetail />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/reservations/new"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ReservationForm />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/users"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <UsersList />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/users/:id"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <UserDetail />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/users/new"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <UserForm />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* 404 */}
+          <Route path="*" element={<div>404 - Page non trouvée</div>} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }

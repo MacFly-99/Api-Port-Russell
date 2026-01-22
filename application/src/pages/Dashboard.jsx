@@ -1,170 +1,107 @@
 import { Container, Row, Col, Card, Table, Badge, Navbar, Nav, Button } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../protection/Authentication';
 import reservationsData from '../datas/reservations.json';
-import { useState } from 'react';
 
 function Dashboard() {
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
 
-  // 1. Réservations réelles
-  const reservations = reservationsData;
-
-  // 2. Calcul des réservations en cours (date réelle)
+  // Réservations en cours (données réelles)
   const today = new Date();
-  const activeReservations = reservations.filter(res => {
+  const activeReservations = reservationsData.filter(res => {
     const start = new Date(res.startDate);
     const end = new Date(res.endDate);
     return start <= today && end >= today;
   });
 
-  const getStatus = (startDate, endDate) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (today < start) return { bg: 'warning', text: 'À venir' };
-    if (today > end) return { bg: 'secondary', text: 'Terminée' };
-    return { bg: 'success', text: 'En cours' };
-  };
-
-  const simulatedUser = {
-    name: reservations[0]?.clientName || 'Utilisateur inconnu',
-    email: reservations[0] 
-      ? `${reservations[0].clientName.toLowerCase().replace(/\s+/g, '.')}@exemple.com`
-      : 'inconnu@exemple.com'
-  };
-
   const handleLogout = () => {
-    alert('Déconnexion effectuée');
-    navigate('/');
+    logout();
+    navigate('/login', { replace: true });
   };
+
+  if (loading) return <div className="text-center py-5">Chargement...</div>;
 
   return (
     <>
-      {/* Navbar fixe en haut */}
+      {/* Navbar */}
       <Navbar bg="dark" variant="dark" expand="lg" fixed="top" className="py-3 shadow">
         <Container fluid>
-          <Navbar.Brand as={Link} to="/dashboard" className="fw-bold fs-4">
-            Port Russell
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbar-nav" />
-          <Navbar.Collapse id="navbar-nav">
+          <Navbar.Brand>Port Russell</Navbar.Brand>
+          <Navbar.Toggle />
+          <Navbar.Collapse>
             <Nav className="me-auto">
-              <Nav.Link as={Link} to="/dashboard">Tableau de bord</Nav.Link>
-              <Nav.Link as={Link} to="/catways">Catways</Nav.Link>
-              <Nav.Link as={Link} to="/reservations">Réservations</Nav.Link>
-              <Nav.Link as={Link} to="/users">Utilisateurs</Nav.Link>
+              <Nav.Link href="/dashboard">Tableau de bord</Nav.Link>
+              <Nav.Link href="/catways">Catways</Nav.Link>
+              <Nav.Link href="/reservations">Réservations</Nav.Link>
+              <Nav.Link href="/users">Utilisateurs</Nav.Link>
             </Nav>
-            <Nav>
-              <Button variant="outline-light" onClick={handleLogout}>
-                Déconnexion
-              </Button>
-            </Nav>
+            <Button variant="outline-light" onClick={handleLogout}>
+              Déconnexion
+            </Button>
           </Navbar.Collapse>
         </Container>
       </Navbar>
 
-      {/* Contenu principal */}
+      {/* Contenu avec padding pour navbar fixe */}
       <div style={{ paddingTop: '80px' }}>
         <Container fluid className="py-5 bg-light min-vh-100">
           <Container>
-            <Row className="mb-5">
-              <Col>
-                <h1 className="display-5 fw-bold">Tableau de bord</h1>
-                <p className="lead text-muted">
-                  Bienvenue, <strong>{simulatedUser.name}</strong> • {new Date().toLocaleDateString('fr-FR')}
-                </p>
-              </Col>
-            </Row>
+            <h1 className="display-5 fw-bold mb-4">Tableau de bord</h1>
+            <p className="lead mb-5">
+              Bienvenue, <strong>{user?.name || 'Utilisateur'}</strong> • {new Date().toLocaleDateString('fr-FR')}
+            </p>
 
-            {/* Infos utilisateur */}
+            {/* Profil */}
             <Row className="mb-5">
               <Col md={4}>
                 <Card className="shadow-sm h-100">
                   <Card.Body>
-                    <Card.Title>Informations utilisateur</Card.Title>
+                    <h5>Votre profil</h5>
                     <hr />
-                    <p><strong>Nom :</strong> {simulatedUser.name}</p>
-                    <p><strong>Email :</strong> {simulatedUser.email}</p>
-                    <p><strong>Rôle :</strong> Client</p>
+                    <p><strong>Nom :</strong> {user?.name}</p>
+                    <p><strong>Email :</strong> {user?.email}</p>
+                    <p><strong>Rôle :</strong> {user?.role}</p>
                   </Card.Body>
                 </Card>
               </Col>
 
+              {/* Réservations */}
               <Col md={8}>
                 <Card className="shadow-sm">
                   <Card.Header className="bg-success text-white">
-                    <h5 className="mb-0">Réservations en cours ({activeReservations.length})</h5>
+                    <h5>Réservations en cours ({activeReservations.length})</h5>
                   </Card.Header>
                   <Card.Body className="p-0">
-                    <Table responsive hover className="mb-0">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Catway</th>
-                          <th>Client</th>
-                          <th>Bateau</th>
-                          <th>Début</th>
-                          <th>Fin</th>
-                          <th>Statut</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {activeReservations.length === 0 ? (
+                    {activeReservations.length === 0 ? (
+                      <p className="text-center py-4 text-muted">Aucune réservation en cours</p>
+                    ) : (
+                      <Table responsive hover>
+                        <thead>
                           <tr>
-                            <td colSpan="7" className="text-center py-4 text-muted">
-                              Aucune réservation en cours actuellement
-                            </td>
+                            <th>#</th>
+                            <th>Catway</th>
+                            <th>Client</th>
+                            <th>Bateau</th>
+                            <th>Début</th>
+                            <th>Fin</th>
                           </tr>
-                        ) : (
-                          activeReservations.map((res, idx) => {
-                            const status = getStatus(res.startDate, res.endDate);
-                            return (
-                              <tr key={idx}>
-                                <td>{idx + 1}</td>
-                                <td>{res.catwayNumber}</td>
-                                <td>{res.clientName}</td>
-                                <td>{res.boatName}</td>
-                                <td>{new Date(res.startDate).toLocaleDateString('fr-FR')}</td>
-                                <td>{new Date(res.endDate).toLocaleDateString('fr-FR')}</td>
-                                <td><Badge bg={status.bg}>{status.text}</Badge></td>
-                              </tr>
-                            );
-                          })
-                        )}
-                      </tbody>
-                    </Table>
+                        </thead>
+                        <tbody>
+                          {activeReservations.map((res, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>{res.catwayNumber}</td>
+                              <td>{res.clientName}</td>
+                              <td>{res.boatName}</td>
+                              <td>{new Date(res.startDate).toLocaleDateString('fr-FR')}</td>
+                              <td>{new Date(res.endDate).toLocaleDateString('fr-FR')}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
                   </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-
-            {/* Liens rapides */}
-            <Row className="g-4">
-              <Col md={4}>
-                <Card className="shadow-sm text-center p-4">
-                  <h5>Catways</h5>
-                  <Button as={Link} to="/catways" variant="outline-primary">
-                    Gérer les catways
-                  </Button>
-                </Card>
-              </Col>
-              <Col md={4}>
-                <Card className="shadow-sm text-center p-4">
-                  <h5>Réservations</h5>
-                  <Button as={Link} to="/reservations" variant="outline-primary">
-                    Gérer les réservations
-                  </Button>
-                </Card>
-              </Col>
-              <Col md={4}>
-                <Card className="shadow-sm text-center p-4">
-                  <h5>Documentation API</h5>
-                  <Button
-                    href="http://localhost:8080/api-docs"
-                    target="_blank"
-                    variant="outline-info"
-                  >
-                    Voir la doc
-                  </Button>
                 </Card>
               </Col>
             </Row>
