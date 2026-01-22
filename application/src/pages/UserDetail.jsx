@@ -1,39 +1,43 @@
-import { Container, Row, Col, Card, ListGroup, Button } from 'react-bootstrap';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
+import reservationsData from '../datas/reservations.json';
+
+const uniqueUsers = reservationsData.reduce((acc, res) => {
+  if (!acc.some(u => u.name === res.clientName)) {
+    acc.push({
+      id: acc.length + 1,
+      name: res.clientName,
+      email: `${res.clientName.toLowerCase().replace(/\s+/g, '.')}@exemple.com`,
+      role: 'client',
+      hasReservation: true
+    });
+  }
+  return acc;
+}, []);
 
 function UserDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const user = uniqueUsers.find(u => u.id === Number(id));
 
-  const user = {
-    id: parseInt(id),
-    name: 'Vasilys Karpov',
-    email: 'vasilys@example.com',
-    role: 'admin',
-    phone: '06 98 76 54 32',
-    createdAt: '2025-11-01',
-    lastLogin: '2026-01-21',
-    reservationsCount: 12,
-  };
+  if (!user) {
+    return (
+      <Container className="py-5 text-center">
+        <h2 className="text-danger">Utilisateur #{id} non trouvé</h2>
+        <Button as={Link} to="/users" variant="primary" className="mt-3">
+          Retour à la liste
+        </Button>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid className="py-5 bg-light min-vh-100">
       <Container>
         <div className="d-flex justify-content-between align-items-center mb-5">
-          <h2 className="mb-0">Détail Utilisateur #{id}</h2>
-          <div>
-            <Button
-              as={Link}
-              to={`/users/${id}/edit`}
-              variant="warning"
-              className="me-3"
-            >
-              Modifier
-            </Button>
-            <Button variant="outline-secondary" onClick={() => navigate('/users')}>
-              Retour à la liste
-            </Button>
-          </div>
+          <h1 className="mb-0">{user.name}</h1>
+          <Button as={Link} to="/users" variant="outline-secondary">
+            Retour à la liste
+          </Button>
         </div>
 
         <Row>
@@ -45,20 +49,22 @@ function UserDetail() {
               <Card.Body>
                 <Row>
                   <Col md={6}>
-                    <p><strong>Nom :</strong> {user.name}</p>
-                    <p><strong>Email :</strong> {user.email}</p>
-                    <p><strong>Téléphone :</strong> {user.phone}</p>
-                    <p>
-                      <strong>Rôle :</strong>{' '}
-                      <span className={`badge bg-${user.role === 'admin' ? 'danger' : 'primary'}`}>
-                        {user.role === 'admin' ? 'Administrateur' : 'Utilisateur'}
-                      </span>
-                    </p>
+                    <p className="mb-2"><strong>Nom :</strong> {user.name}</p>
+                    <p className="mb-2"><strong>Email (généré) :</strong> {user.email}</p>
                   </Col>
                   <Col md={6}>
-                    <p><strong>Inscrit le :</strong> {user.createdAt}</p>
-                    <p><strong>Dernière connexion :</strong> {user.lastLogin}</p>
-                    <p><strong>Réservations effectuées :</strong> {user.reservationsCount}</p>
+                    <p className="mb-2">
+                      <strong>Rôle :</strong>{' '}
+                      <Badge bg="primary" className="fs-6 px-3 py-2">
+                        {user.role}
+                      </Badge>
+                    </p>
+                    <p className="mb-2">
+                      <strong>Présent dans les réservations :</strong>{' '}
+                      <Badge bg="success" className="fs-6 px-3 py-2">
+                        Oui
+                      </Badge>
+                    </p>
                   </Col>
                 </Row>
               </Card.Body>
@@ -70,17 +76,18 @@ function UserDetail() {
               <Card.Header>
                 <h5 className="mb-0">Actions</h5>
               </Card.Header>
-              <ListGroup variant="flush">
-                <ListGroup.Item action as={Link} to={`/users/${id}/edit`}>
-                  Modifier le profil
-                </ListGroup.Item>
-                <ListGroup.Item action variant="danger">
-                  Supprimer l'utilisateur
-                </ListGroup.Item>
-                <ListGroup.Item action>
-                  Voir ses réservations
-                </ListGroup.Item>
-              </ListGroup>
+              <ul className="list-group list-group-flush">
+                <li className="list-group-item">
+                  <Button variant="outline-primary" className="w-100 text-start">
+                    Modifier le profil
+                  </Button>
+                </li>
+                <li className="list-group-item">
+                  <Button variant="outline-danger" className="w-100 text-start">
+                    Supprimer cet utilisateur
+                  </Button>
+                </li>
+              </ul>
             </Card>
           </Col>
         </Row>

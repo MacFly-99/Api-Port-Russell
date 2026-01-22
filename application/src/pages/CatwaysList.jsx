@@ -1,30 +1,25 @@
-import { useState } from 'react';
+import catwaysData from '../datas/catways.json';
 import { Container, Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-// Import des données fournies
-import catwaysData from '../datas/catways.json';
-
 function CatwaysList() {
-  const [catways] = useState(catwaysData);
+  const catways = catwaysData;
 
-  const getStatusBadge = (state) => {
-    let variant = 'secondary';
-    let label = state;
-
-    if (state.includes('bon état')) variant = 'success';
-    if (state.includes('En cours de réparation') || state.includes('tâche') || state.includes('trou')) variant = 'warning';
-    if (state.includes('désolidarisé') || state.includes('désolidarisée')) variant = 'danger';
-
-    return <Badge bg={variant}>{label}</Badge>;
+  const getStatusVariant = (state) => {
+    const lower = state.toLowerCase();
+    if (lower.includes('bon état')) return 'success';
+    if (lower.includes('réparation') || lower.includes('tâche') || lower.includes('trou')) return 'warning';
+    if (lower.includes('désolidari')) return 'danger';
+    return 'secondary';
   };
 
   return (
     <Container fluid className="py-5 bg-light min-vh-100">
       <Container>
-        <Row className="mb-4 align-items-center">
+        <Row className="mb-5 align-items-center">
           <Col>
-            <h2 className="mb-0">Gestion des Catways ({catways.length})</h2>
+            <h1 className="display-5 fw-bold text-primary">Gestion des Catways</h1>
+            <p className="lead text-muted">{catways.length} catways enregistrés</p>
           </Col>
           <Col xs="auto">
             <Button as={Link} to="/catways/new" variant="success" size="lg">
@@ -33,9 +28,9 @@ function CatwaysList() {
           </Col>
         </Row>
 
-        <Card className="shadow-sm border-0">
+        <Card className="shadow border-0 rounded-4 overflow-hidden">
           <Card.Body className="p-0">
-            <Table responsive hover striped className="mb-0">
+            <Table responsive hover className="mb-0">
               <thead className="table-dark">
                 <tr>
                   <th>#</th>
@@ -48,10 +43,14 @@ function CatwaysList() {
               <tbody>
                 {catways.map((catway, index) => (
                   <tr key={index}>
-                    <td>{index + 1}</td>
+                    <td className="fw-medium">{index + 1}</td>
                     <td className="fw-bold">{catway.catwayNumber}</td>
                     <td>{catway.catwayType}</td>
-                    <td>{getStatusBadge(catway.catwayState)}</td>
+                    <td>
+                      <Badge bg={getStatusVariant(catway.catwayState)} className="fs-6 px-3 py-2">
+                        {catway.catwayState}
+                      </Badge>
+                    </td>
                     <td>
                       <Button
                         as={Link}

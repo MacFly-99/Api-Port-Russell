@@ -1,74 +1,65 @@
 import { useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import reservationsData from '../datas/reservations.json';
+
+const uniqueUsers = reservationsData.reduce((acc, res) => {
+  if (!acc.some(u => u.name === res.clientName)) {
+    acc.push({
+      id: acc.length + 1,
+      name: res.clientName,
+      email: `${res.clientName.toLowerCase().replace(/\s+/g, '.')}@exemple.com`,
+      role: 'client',
+      hasReservation: true
+    });
+  }
+  return acc;
+}, []);
 
 function UsersList() {
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Vasilys', email: 'vasilys@example.com', role: 'admin', createdAt: '2025-12-01' },
-    { id: 2, name: 'Jean Dupont', email: 'jean@example.com', role: 'user', createdAt: '2026-01-10' },
-    { id: 3, name: 'Marie Curie', email: 'marie@example.com', role: 'user', createdAt: '2026-01-15' },
-  ]);
+  const [users] = useState(uniqueUsers);
 
   return (
     <Container fluid className="py-5 bg-light min-vh-100">
       <Container>
-        <Row className="mb-4 align-items-center">
+        <Row className="mb-5 align-items-center">
           <Col>
-            <h2 className="mb-0">Gestion des Utilisateurs</h2>
+            <h1 className="display-5 fw-bold text-primary">Gestion des Utilisateurs</h1>
+            <p className="lead text-muted">
+              {users.length} clients uniques trouvés dans les réservations
+            </p>
           </Col>
           <Col xs="auto">
             <Button as={Link} to="/users/new" variant="success" size="lg">
-              + Nouvel Utilisateur
+              + Nouvel utilisateur
             </Button>
           </Col>
         </Row>
 
-        <Card className="shadow-sm border-0">
+        <Card className="shadow border-0 rounded-4 overflow-hidden">
           <Card.Body className="p-0">
-            <Table responsive hover striped className="mb-0">
+            <Table responsive hover className="mb-0">
               <thead className="table-dark">
                 <tr>
                   <th>ID</th>
                   <th>Nom</th>
-                  <th>Email</th>
+                  <th>Email (généré)</th>
                   <th>Rôle</th>
-                  <th>Inscrit le</th>
+                  <th>Réservations</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
+                {users.map(user => (
                   <tr key={user.id}>
                     <td>{user.id}</td>
                     <td className="fw-bold">{user.name}</td>
                     <td>{user.email}</td>
+                    <td><Badge bg="primary">{user.role}</Badge></td>
+                    <td><Badge bg="success">Oui</Badge></td>
                     <td>
-                      <Badge bg={user.role === 'admin' ? 'danger' : 'primary'}>
-                        {user.role}
-                      </Badge>
-                    </td>
-                    <td>{user.createdAt}</td>
-                    <td>
-                      <Button
-                        as={Link}
-                        to={`/users/${user.id}`}
-                        variant="outline-primary"
-                        size="sm"
-                        className="me-2"
-                      >
+                      <Button as={Link} to={`/users/${user.id}`} variant="outline-primary" size="sm">
                         Détails
-                      </Button>
-                      <Button
-                        as={Link}
-                        to={`/users/${user.id}/edit`}
-                        variant="outline-warning"
-                        size="sm"
-                        className="me-2"
-                      >
-                        Modifier
-                      </Button>
-                      <Button variant="outline-danger" size="sm">
-                        Supprimer
                       </Button>
                     </td>
                   </tr>
