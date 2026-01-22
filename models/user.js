@@ -22,6 +22,11 @@ const User = new Schema({
         trim: true,
         required: [true, 'Le mot de passe est requis'],
     },
+    userRole: {
+        type: String,
+        enum: ['admin', 'user'],
+        default: 'user'
+    }
 }, {
     // Ajout des timestamps (createdAt, updatedAt)
     timestamps: true

@@ -4,7 +4,10 @@ exports.createUser = async (req, res, next) => {
     const userData = ({
         name: req.body.name,
         email: req.body.email,
-        password: req.body.password
+        password: req.body.password,
+        role: req.body.role
+
+
     });
 
     try {
