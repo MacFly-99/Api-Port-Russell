@@ -1,11 +1,11 @@
 import { Container } from 'react-bootstrap';
-import Navbar from './Navbar';
+import CustomNavbar from './Navbar';
 
 function Layout({ children }) {
   return (
     <>
-      <Navbar />
-      <div style={{ paddingTop: '80px' }}> {/* Space for the fixed navbar */}
+      <CustomNavbar />
+      <div style={{ paddingTop: '80px' }}> {/* Espace pour navbar fixe */}
         <Container fluid className="py-4">
           {children}
         </Container>
