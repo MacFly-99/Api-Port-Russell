@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
+
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+// Route pour la connexion d'un utilisateur
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -13,42 +15,58 @@ router.post('/login', async (req, res) => {
 
   try {
     // Recherche par email
-    const user = await User.findOne({ userEmail: email.toLowerCase() });
-    if (!user) {
-      return res.status(401).json({ message: 'Identifiants incorrects' });
+    const user = await User.findOne({ userEmail: email.toLowerCase() }, '-__v -createdAt -updatedAt');
+
+    if (user) {
+      bcrypt.compare(password, user.userPassword, function(err, result) {
+        if (err) {
+          throw new Error('Login_failed');
+        }
+
+        if (result) {
+          // Suppression du mot de passe avant envoi
+          delete user._doc.userPassword;
+
+          const expireIn = 24 * 60 * 60;
+          const token = jwt.sign({
+            userId: user._id,
+            email: user.userEmail,
+            name: user.userName || user.userEmail.split('@')[0],
+            role: user.role || 'user'
+          },
+          process.env.SECRET_KEY,
+          { expiresIn: expireIn });
+
+          // On met le token dans le header
+          res.header('Authorization', 'Bearer ' + token);
+
+          // Réponse réussie avec token + user dans le body
+          return res.status(200).json({
+            message: 'Login_successful',
+            token: token,
+            user: {
+              name: user.userName,
+              email: user.userEmail,
+              role: user.role || 'user'
+            }
+          });
+        } else {
+          return res.status(403).json({ message: 'Login_failed' });
+        }
+      });
+    } else {
+      return res.status(404).json({ message: 'User_not_found' });
     }
-
-    // Comparaison du mot de passe
-    const isMatch = await bcrypt.compare(password, user.userPassword);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Identifiants incorrects' });
-    }
-
-    // Génération du token
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        email: user.userEmail,
-        name: user.userName,
-        role: user.role || 'user'
-      },
-      process.env.SECRET_KEY,
-      { expiresIn: '24h' }
-    );
-
-    // Réponse réussie
-    res.json({
-      token,
-      user: {
-        name: user.userName,
-        email: user.userEmail,
-        role: user.role || 'user'
-      }
-    });
   } catch (err) {
     console.error('Erreur login:', err);
-    res.status(500).json({ message: 'Erreur serveur' });
+    return res.status(500).json({ message: 'Erreur serveur' });
   }
+});
+
+// Route pour la déconnexion d'un utilisateur
+router.get('/logout', (req, res) => {
+  // Pour la déconnexion, il suffit de supprimer le token côté client
+  return res.status(200).json({ message: 'Logout_successful' });
 });
 
 module.exports = router;
