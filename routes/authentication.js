@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const private = require('../middlewares/private')
 
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
@@ -67,6 +68,23 @@ router.post('/login', async (req, res) => {
 router.get('/logout', (req, res) => {
   // Pour la déconnexion, il suffit de supprimer le token côté client
   return res.status(200).json({ message: 'Logout_successful' });
+});
+
+// Route pour récupérer l'utilisateur connecté (infos mises à jour)
+router.get('/me', private.checkJWT, async (req, res) => {
+  try {
+    const user = await User.findByName(req.decoded.userId).select('-userPassword -__v');
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+    return res.status(200).json({
+      name: user.userName,
+      email: user.userEmail,
+      role: user.role || 'user'
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
 });
 
 module.exports = router;
