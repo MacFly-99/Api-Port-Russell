@@ -6,7 +6,8 @@
     "start": "nodemon ./bin/www",
     "dev": "concurrently \"npm start\" \"cd application && npm start\"",
     "build:client": "cd application && npm run build",
-    "start:prod": "npm run build:application && npm start"
+    "start:prod": "npm run build:application && npm start",
+    "docs": "jsdoc -c jsdoc.conf.json"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "env-cmd": "^11.0.0"
+    "env-cmd": "^11.0.0",
+    "jsdoc": "^4.0.5"
   }
 }
