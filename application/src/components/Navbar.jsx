@@ -1,6 +1,7 @@
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../protection/Authentication';
+import ApiDocLink from './ApiDocLink';
 
 function CustomNavbar() {
   const { user, logout } = useAuth();
