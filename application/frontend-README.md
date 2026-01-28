@@ -2,12 +2,20 @@
 
 Interface utilisateur complète pour la gestion du port de plaisance.
 
+
+## Documentation interactive (Swagger)
+
+La documentation complète et testable de l’API est disponible via Swagger UI :
+**http://localhost:8080/api-docs**
+
+
 ## Technologies
 
 - React 18
 - React Router v6
 - Bootstrap 5
 - Fetch pour les appels API
+
 
 ## Structure du projet
 

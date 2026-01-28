@@ -2,6 +2,13 @@
 
 Gestion complète du port de plaisance : utilisateurs, catways, réservations, authentification sécurisée.
 
+
+## Documentation de l’API (Swagger)
+
+La documentation interactive de l’API backend est accessible ici :
+**http://localhost:8080/api-docs**
+
+
 ## Technologies
 
 - Node.js + Express
@@ -9,6 +16,7 @@ Gestion complète du port de plaisance : utilisateurs, catways, réservations, a
 - JWT pour l'authentification
 - bcrypt pour le hashage des mots de passe
 - CORS, cookie-parser, morgan (logs)
+
 
 ## Structure du projet
 

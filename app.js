@@ -27,6 +27,16 @@ app.use(cookieParser());
 app.use('/api/authentication', authRouter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+const swaggerUi = require('swagger-ui-express');
+const specs = require('./swagger');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  explorer: true,
+  swaggerOptions: {
+    persistAuthorization: true,      // garde le token quand on recharge
+  },
+}));
+
 // Middleware global de gestion des erreurs
 app.use((err, req, res, next) => {
   console.error('Erreur serveur :', err);

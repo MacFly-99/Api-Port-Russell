@@ -1,3 +1,118 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentification et gestion de session utilisateur
+ */
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Connexion d'un utilisateur
+ *     description: Authentifie un utilisateur via email/mot de passe et retourne un token JWT + infos utilisateur
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: vasilys@port-russell.fr
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: motdepasse123
+ *     responses:
+ *       200:
+ *         description: Connexion réussie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: [admin, user]
+ *       400:
+ *         description: Email ou mot de passe manquant
+ *       401:
+ *         description: Identifiants incorrects
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Récupérer les informations de l'utilisateur connecté
+ *     description: Retourne les données de l'utilisateur actuellement authentifié (basé sur le token JWT)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Informations utilisateur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 role:
+ *                   type: string
+ *                   enum: [admin, user]
+ *       401:
+ *         description: Non authentifié ou token invalide
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   get:
+ *     summary: Déconnexion
+ *     description: Indique au client de supprimer le token (pas d'action serveur)
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Déconnexion réussie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Logout_successful
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const private = require('../middlewares/private')

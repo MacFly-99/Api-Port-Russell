@@ -2,6 +2,7 @@ import { Container, Row, Col, Card, Table, Badge, Navbar, Nav, Button } from 're
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../protection/Authentication';
 import reservationsData from '../datas/reservations.json';
+import ApiDocLink from '../components/ApiDocLink';
 
 function Dashboard() {
   const { user, logout, loading } = useAuth();
