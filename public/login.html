@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - Port de Russell</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0a2a4a; color: white; text-align: center; padding: 50px; }
+    .container { max-width: 400px; margin: auto; background: #112b4a; padding: 40px; border-radius: 10px; }
+    input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; }
+    button { width: 100%; padding: 12px; background: #00aaff; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    button:hover { background: #0088cc; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚤 Port de Russell</h1>
+    <h2>Connexion Capitainerie</h2>
+    
+    <input type="email" id="email" placeholder="Email" value="capitaine@russell.fr"><br>
+    <input type="password" id="password" placeholder="Mot de passe" value="123456"><br>
+    
+    <button onclick="login()">Se connecter</button>
+    
+    <p id="message" style="color: red; margin-top: 15px;"></p>
+  </div>
+
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const message = document.getElementById('message');
+
+      try {
+        const res = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          window.location.href = 'dashboard.html';
+        } else {
+          message.textContent = data.message || 'Erreur de connexion';
+        }
+      } catch (err) {
+        message.textContent = 'Erreur serveur';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réservations - Russell Harbor</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: linear-gradient(135deg, #0a2a4a, #1e3a5f); 
+      color: white; 
+      margin: 0; 
+      padding: 20px; 
+    }
+    .header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 30px; 
+      background: rgba(0,0,0,0.3); 
+      padding: 15px 20px; 
+      border-radius: 10px; 
+    }
+    button { 
+      padding: 10px 18px; 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+    }
+    .btn-primary { background: #00aaff; color: white; }
+    input { 
+      padding: 10px; 
+      width: 180px; 
+      margin-right: 10px; 
+      border-radius: 5px; 
+      border: none; 
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      background: rgba(255,255,255,0.1); 
+      margin-top: 20px; 
+      border-radius: 10px; 
+      overflow: hidden; 
+    }
+    th, td { 
+      padding: 14px; 
+      text-align: left; 
+      border-bottom: 1px solid rgba(255,255,255,0.2); 
+    }
+    th { background: #00aaff; }
+    .empty { 
+      text-align: center; 
+      padding: 40px; 
+      color: #aaa; 
+      font-style: italic; 
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📅 Gestion des Réservations</h1>
+    <button onclick="window.location.href='dashboard.html'" class="btn-primary">Retour au Dashboard</button>
+  </div>
+
+  <h2>Réservations par Catway</h2>
+  <div>
+    <input type="number" id="catwayNumber" placeholder="Numéro du catway" value="1">
+    <button onclick="loadReservations()" class="btn-primary">Charger les réservations</button>
+  </div>
+
+  <table id="reservationsTable">
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>Bateau</th>
+        <th>Date début</th>
+        <th>Date fin</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    async function loadReservations() {
+      const catwayNumber = document.getElementById('catwayNumber').value.trim();
+      if (!catwayNumber) {
+        alert("Veuillez entrer un numéro de catway");
+        return;
+      }
+
+      const tbody = document.querySelector('#reservationsTable tbody');
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">Chargement en cours...</td></tr>';
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/catways/${catwayNumber}/reservations`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) throw new Error("Erreur lors du chargement");
+
+        const reservations = await res.json();
+        tbody.innerHTML = '';
+
+        if (reservations.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="empty">Aucune réservation trouvée pour le catway ${catwayNumber}</td></tr>`;
+          return;
+        }
+
+        reservations.forEach(r => {
+          // Gestion robuste des dates (même si elles sont en string ISO)
+          const startDate = r.startDate ? new Date(r.startDate).toLocaleDateString('fr-FR') : 'Non définie';
+          const endDate = r.endDate ? new Date(r.endDate).toLocaleDateString('fr-FR') : 'Non définie';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${r.clientName || '-'}</td>
+            <td>${r.boatName || '-'}</td>
+            <td>${startDate}</td>
+            <td>${endDate}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" class="empty">Erreur : ${err.message}</td></tr>`;
+        console.error(err);
+      }
+    }
+
+    // Charger automatiquement les réservations du catway 1 au chargement
+    window.onload = loadReservations;
+  </script>
+</body>
+</html>

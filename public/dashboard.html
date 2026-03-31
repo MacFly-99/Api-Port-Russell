@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord - Russell Harbor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0a2a4a, #1e3a5f);
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      background: rgba(0,0,0,0.3);
+      padding: 15px 20px;
+      border-radius: 10px;
+    }
+    h1 { margin: 0; }
+    button {
+      padding: 10px 18px;
+      background: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover { background: #cc0000; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    th {
+      background: #00aaff;
+    }
+    .empty {
+      text-align: center;
+      padding: 40px;
+      font-style: italic;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚤 Tableau de bord - Russell Harbor</h1>
+    <div>
+      <span id="username" style="margin-right: 20px;"></span>
+      <button onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <h2>Liste des Catways</h2>
+  <table id="catwaysTable">
+    <thead>
+      <tr>
+        <th>Numéro</th>
+        <th>Type</th>
+        <th>État</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    // Afficher le nom de l'utilisateur
+    const user = JSON.parse(atob(token.split('.')[1]));
+    document.getElementById('username').textContent = `Connecté : ${user.username || user.email}`;
+
+    async function loadCatways() {
+      try {
+        const res = await fetch('http://localhost:3000/api/catways', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.ok) {
+          const catways = await res.json();
+          const tbody = document.querySelector('#catwaysTable tbody');
+          tbody.innerHTML = '';
+
+          if (catways.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" class="empty">Aucun catway trouvé</td></tr>`;
+            return;
+          }
+
+          catways.forEach(c => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td><strong>${c.catwayNumber}</strong></td>
+              <td>${c.catwayType}</td>
+              <td>${c.catwayState}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        } else if (res.status === 401) {
+          alert("Session expirée. Veuillez vous reconnecter.");
+          logout();
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erreur lors du chargement des catways");
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    }
+
+    // Charger les données
+    loadCatways();
+  </script>
+</body>
+</html>
