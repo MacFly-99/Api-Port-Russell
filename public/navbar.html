@@ -1,0 +1,29 @@
+<nav class="navbar">
+    <div class="nav-brand">
+        <strong>🚤 Port Russell</strong>
+    </div>
+    
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item">🏠 Tableau de bord</a>
+        <a href="catways.html" class="nav-item">⚓ Catways</a>
+        <a href="reservations.html" class="nav-item">📅 Réservations</a>
+        <a href="users.html" class="nav-item">👥 Utilisateurs</a>
+    </div>
+
+    <div class="nav-user">
+        <span id="username-display">Utilisateur</span>
+        <button onclick="performLogout()" class="btn-logout">Déconnexion</button>
+    </div>
+</nav>
+
+<script>
+// Fonction de déconnexion qui marche partout
+function performLogout() {
+    localStorage.removeItem('token');
+    // Optionnel : supprimer aussi le username si tu le stockes
+    localStorage.removeItem('username');
+    
+    // Redirection immédiate
+    window.location.href = 'login.html';
+}
+</script>
