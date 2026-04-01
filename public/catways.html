@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catways - Russell Harbor</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #0a2a4a, #1e3a5f); color: white; margin: 0; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 12px; }
+    button { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; margin: 5px; }
+    .btn-primary { background: #00aaff; color: white; }
+    table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.1); margin-top: 20px; border-radius: 12px; overflow: hidden; }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.2); }
+    th { background: #00aaff; }
+    .empty { text-align: center; padding: 60px; color: #aaa; font-style: italic; }
+    /* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #003366;
+    text-align: center;
+}
+
+.modal-content label {
+    display: block;
+    margin: 12px 0 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.modal-content input,
+.modal-content select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.modal-buttons {
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📋 Gestion des Catways</h1>
+    <button onclick="window.location.href='dashboard.html'" class="btn-primary">Retour au Dashboard</button>
+  </div>
+
+  <h2>Liste des Catways</h2>
+  <button onclick="loadCatways()" class="btn-primary">Rafraîchir la liste</button>
+  <button onclick="openCreateCatwayModal()" class="btn-primary">Créer un catway</button>
+  
+  <table id="catwaysTable">
+    <thead>
+      <tr>
+        <th>Numéro</th>
+        <th>Type</th>
+        <th>État</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    async function loadCatways() {
+      const tbody = document.querySelector('#catwaysTable tbody');
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">Chargement des 24 catways...</td></tr>';
+
+      try {
+        const res = await fetch('http://localhost:3000/api/catways', {
+          headers: { 
+            'Authorization': `Bearer ${token}` 
+          }
+        });
+
+        console.log("Réponse status:", res.status);
+
+        const catways = await res.json();
+        console.log("Nombre de catways reçus:", catways.length);
+
+        tbody.innerHTML = '';
+
+        if (catways.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="empty">Aucun catway trouvé.<br>Tu as pourtant 24 catways dans Compass.</td></tr>`;
+          return;
+        }
+
+        catways.forEach(c => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${c.catwayNumber}</strong></td>
+            <td>${c.catwayType}</td>
+            <td>${c.catwayState}</td>
+            <td>
+              <button onclick="updateCatwayState(${c.catwayNumber})" class="btn-primary">Modifier État</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error(err);
+        const tbody = document.querySelector('#catwaysTable tbody');
+        tbody.innerHTML = `<tr><td colspan="4" class="empty">Erreur : ${err.message}</td></tr>`;
+      }
+    }
+
+// Ouvrir le modal
+function openCreateCatwayModal() {
+    document.getElementById('createCatwayModal').style.display = 'flex';
+    // Réinitialiser les champs
+    document.getElementById('catwayNumber').value = '';
+    document.getElementById('catwayState').value = 'bon état';
+}
+
+// Fermer le modal
+function closeModal() {
+    document.getElementById('createCatwayModal').style.display = 'none';
+}
+
+// Soumettre la création
+async function submitCreateCatway() {
+    const numberInput = document.getElementById('catwayNumber').value;
+    const type = document.getElementById('catwayType').value;
+    const state = document.getElementById('catwayState').value.trim();
+
+    if (!numberInput) {
+        alert("Veuillez entrer un numéro de catway");
+        return;
+    }
+
+    const catwayNumber = parseInt(numberInput);
+
+    try {
+        const res = await fetch('http://localhost:3000/api/catways', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                catwayNumber: catwayNumber,
+                catwayType: type,
+                catwayState: state || "bon état"
+            })
+        });
+
+        if (res.ok) {
+            alert("✅ Catway créé avec succès !");
+            closeModal();
+            loadCatways();   // Rafraîchit automatiquement la liste
+        } else {
+            const errorData = await res.json().catch(() => ({}));
+            alert(`❌ Erreur : ${errorData.message || "Impossible de créer le catway"}`);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Erreur de connexion au serveur");
+    }
+}
+
+    async function updateCatwayState(catwayNumber) {
+      const newState = prompt("Nouvel état :", "disponible");
+      if (!newState) return;
+
+      try {
+        await fetch(`http://localhost:3000/api/catways/${catwayNumber}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ catwayState: newState })
+        });
+        loadCatways();
+      } catch (err) {
+        alert("Erreur");
+      }
+    }
+
+    window.onload = loadCatways;
+  </script>
+  <!-- Modal Créer Catway -->
+<div id="createCatwayModal" class="modal">
+    <div class="modal-content">
+        <h3>Créer un nouveau Catway</h3>
+        
+        <label>Numéro du catway :</label>
+        <input type="number" id="catwayNumber" min="1" placeholder="Ex: 26" required>
+
+        <label>Type :</label>
+        <select id="catwayType">
+            <option value="short">Short</option>
+            <option value="long">Long</option>
+        </select>
+
+        <label>État initial :</label>
+        <input type="text" id="catwayState" value="bon état" placeholder="Ex: bon état, en maintenance...">
+
+        <div class="modal-buttons">
+            <button onclick="closeModal()" class="btn-secondary">Annuler</button>
+            <button onclick="submitCreateCatway()" class="btn-primary">Créer le catway</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

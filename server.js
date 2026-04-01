@@ -12,10 +12,15 @@ app.use(cors());
 // Servir les fichiers statiques (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connexion MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB connecté avec succès'))
-  .catch(err => console.error('❌ Erreur MongoDB:', err));
+// Connexion MongoDB avec nom de base explicite
+mongoose.connect(process.env.MONGO_URL, {
+  dbName: 'Port-Russell'   // ← Force l'utilisation de la bonne base
+})
+.then(() => {
+  console.log('✅ MongoDB connecté avec succès');
+  console.log('📍 Base de données utilisée :', mongoose.connection.db.databaseName);
+})
+.catch(err => console.error('❌ Erreur MongoDB:', err));
 
 // Routes API
 app.use('/api/auth', require('./routes/auth'));
