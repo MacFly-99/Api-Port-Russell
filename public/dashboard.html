@@ -16,64 +16,74 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
+      margin-bottom: 40px;
       background: rgba(0,0,0,0.3);
-      padding: 15px 20px;
-      border-radius: 10px;
+      padding: 20px;
+      border-radius: 12px;
     }
-    h1 { margin: 0; }
+    h1 { margin: 0; font-size: 28px; }
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.1);
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      background: rgba(255,255,255,0.15);
+    }
+    .card h3 {
+      margin: 15px 0 10px 0;
+      font-size: 22px;
+    }
     button {
-      padding: 10px 18px;
+      padding: 12px 25px;
       background: #ff4444;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
+      font-size: 16px;
     }
     button:hover { background: #cc0000; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    th, td {
-      padding: 14px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-    th {
-      background: #00aaff;
-    }
-    .empty {
-      text-align: center;
-      padding: 40px;
-      font-style: italic;
-      color: #aaa;
-    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>🚤 Tableau de bord - Russell Harbor</h1>
+    <h1>🚤 Russell Harbor - Capitainerie</h1>
     <div>
-      <span id="username" style="margin-right: 20px;"></span>
+      <span id="username" style="margin-right: 25px; font-size: 18px;"></span>
       <button onclick="logout()">Déconnexion</button>
     </div>
   </div>
 
-  <h2>Liste des Catways</h2>
-  <table id="catwaysTable">
-    <thead>
-      <tr>
-        <th>Numéro</th>
-        <th>Type</th>
-        <th>État</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h2>Bienvenue sur le Tableau de bord</h2>
+  <p id="date" style="margin-bottom: 30px; opacity: 0.9;"></p>
+
+  <div class="menu">
+    <div class="card" onclick="window.location.href='dashboard.html'">
+      <h3>📋 Catways</h3>
+      <p>Gérer les catways (liste, état, etc.)</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='reservations.html'">
+      <h3>📅 Réservations</h3>
+      <p>Voir et gérer les réservations par catway</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='users.html'">
+      <h3>👥 Utilisateurs</h3>
+      <p>Gérer les comptes de la capitainerie</p>
+    </div>
+  </div>
 
   <script>
     const token = localStorage.getItem('token');
@@ -81,43 +91,18 @@
       window.location.href = 'login.html';
     }
 
-    // Afficher le nom de l'utilisateur
-    const user = JSON.parse(atob(token.split('.')[1]));
-    document.getElementById('username').textContent = `Connecté : ${user.username || user.email}`;
-
-    async function loadCatways() {
+    // Afficher le nom de l'utilisateur et la date actuelle
+    function updateHeader() {
       try {
-        const res = await fetch('http://localhost:3000/api/catways', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-
-        if (res.ok) {
-          const catways = await res.json();
-          const tbody = document.querySelector('#catwaysTable tbody');
-          tbody.innerHTML = '';
-
-          if (catways.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="empty">Aucun catway trouvé</td></tr>`;
-            return;
-          }
-
-          catways.forEach(c => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td><strong>${c.catwayNumber}</strong></td>
-              <td>${c.catwayType}</td>
-              <td>${c.catwayState}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        } else if (res.status === 401) {
-          alert("Session expirée. Veuillez vous reconnecter.");
-          logout();
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Erreur lors du chargement des catways");
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        document.getElementById('username').textContent = `👤 ${payload.username || payload.email}`;
+      } catch (e) {
+        document.getElementById('username').textContent = '👤 Utilisateur connecté';
       }
+
+      const now = new Date();
+      document.getElementById('date').textContent = 
+        `Aujourd'hui : ${now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`;
     }
 
     function logout() {
@@ -125,8 +110,8 @@
       window.location.href = 'login.html';
     }
 
-    // Charger les données
-    loadCatways();
+    // Initialisation
+    window.onload = updateHeader;
   </script>
 </body>
 </html>
