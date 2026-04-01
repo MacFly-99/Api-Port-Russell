@@ -55,6 +55,62 @@
       color: #aaa; 
       font-style: italic; 
     }
+    /* Modal pour réservation */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.65);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 460px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    color: #333;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #003366;
+    text-align: center;
+}
+
+.modal-content label {
+    display: block;
+    margin: 12px 0 6px;
+    font-weight: bold;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.modal-buttons {
+    margin-top: 25px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
   </style>
 </head>
 <body>
@@ -67,6 +123,7 @@
   <div>
     <input type="number" id="catwayNumber" placeholder="Numéro du catway" value="1">
     <button onclick="loadReservations()" class="btn-primary">Charger les réservations</button>
+    <button onclick="openCreateReservationModal()" class="btn-primary">Créer une réservation</button>
   </div>
 
   <table id="reservationsTable">
@@ -132,6 +189,90 @@
 
     // Charger automatiquement les réservations du catway 1 au chargement
     window.onload = loadReservations;
+    
+    // Ouvrir le modal
+function openCreateReservationModal() {
+    document.getElementById('createReservationModal').style.display = 'flex';
+    
+    // Optionnel : pré-remplir avec le numéro du catway actuellement saisi
+    const currentCatway = document.getElementById('catwayNumber').value;
+    if (currentCatway) {
+        document.getElementById('resCatwayNumber').value = currentCatway;
+    }
+}
+
+// Fermer le modal
+function closeReservationModal() {
+    document.getElementById('createReservationModal').style.display = 'none';
+}
+
+// Soumettre la création
+async function submitCreateReservation() {
+    const catwayNumber = parseInt(document.getElementById('resCatwayNumber').value);
+    const clientName   = document.getElementById('clientName').value.trim();
+    const boatName     = document.getElementById('boatName').value.trim();
+    const startDate    = document.getElementById('startDate').value;
+    const endDate      = document.getElementById('endDate').value;
+
+    if (!catwayNumber || !clientName || !boatName || !startDate || !endDate) {
+        alert("Tous les champs sont obligatoires");
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/catways/${catwayNumber}/reservations`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                clientName: clientName,
+                boatName: boatName,
+                startDate: startDate,
+                endDate: endDate
+            })
+        });
+
+        if (res.ok) {
+            alert("✅ Réservation créée avec succès !");
+            closeReservationModal();
+            loadReservations();   // Rafraîchit la liste
+        } else {
+            const errorData = await res.json().catch(() => ({}));
+            alert(`❌ Erreur : ${errorData.message || "Impossible de créer la réservation"}`);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Erreur de connexion au serveur");
+    }
+}
   </script>
+  <!-- Modal Créer Réservation -->
+<div id="createReservationModal" class="modal">
+    <div class="modal-content">
+        <h3>Créer une nouvelle Réservation</h3>
+        
+        <label>Numéro du catway :</label>
+        <input type="number" id="resCatwayNumber" min="1" placeholder="Ex: 1" required>
+
+        <label>Nom du client :</label>
+        <input type="text" id="clientName" placeholder="Ex: Jean Dupont" required>
+
+        <label>Nom du bateau :</label>
+        <input type="text" id="boatName" placeholder="Ex: Sea Spirit" required>
+
+        <label>Date de début :</label>
+        <input type="date" id="startDate" required>
+
+        <label>Date de fin :</label>
+        <input type="date" id="endDate" required>
+
+        <div class="modal-buttons">
+            <button onclick="closeReservationModal()" class="btn-secondary">Annuler</button>
+            <button onclick="submitCreateReservation()" class="btn-primary">Créer la réservation</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
