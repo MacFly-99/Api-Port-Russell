@@ -8,22 +8,19 @@
 </head>
 <body>
     
-<!-- === NAVBAR COMMUNE === -->
 <script>
     fetch('navbar.html')
         .then(response => response.text())
         .then(data => {
             document.body.insertAdjacentHTML('afterbegin', data);
-            
-            // Optionnel : charger le nom d'utilisateur après insertion
-            setTimeout(loadUsernameIfExists, 100);
         })
-        .catch(err => {
-            console.error("Erreur lors du chargement de la navbar :", err);
-        });
+        .catch(err => console.error("Erreur navbar :", err));
 </script>
 
   <h2>Liste des Catways</h2>
+
+      <p id="current-date" style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px;"></p>
+
   <button onclick="loadCatways()" class="btn-primary">Rafraîchir la liste</button>
   <button onclick="openCreateCatwayModal()" class="btn-primary">Créer un catway</button>
   
@@ -173,6 +170,11 @@ async function loadUserInfo() {
     } catch(e) {}
 }
 
+// Afficher la date sur le dashboard
+const now = new Date();
+const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+document.getElementById('current-date').textContent = 
+    `Aujourd'hui : ${now.toLocaleDateString('fr-FR', dateOptions)}`;
   </script>
   <!-- Modal Créer Catway -->
 <div id="createCatwayModal" class="modal">
