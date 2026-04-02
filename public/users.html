@@ -1,195 +1,225 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Utilisateurs - Russell Harbor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Utilisateurs - Port Russell</title>
 </head>
 <body>
 
-<script>
-    fetch('navbar.html')
-        .then(response => response.text())
-        .then(data => {
-            document.body.insertAdjacentHTML('afterbegin', data);
-        })
-        .catch(err => console.error("Erreur navbar :", err));
-</script>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.body.insertAdjacentHTML('afterbegin', data))
+            .catch(err => console.error("Erreur navbar :", err));
+    </script>
 
-  <h2>Liste des Utilisateurs</h2>
+    <h2>Liste des Utilisateurs</h2>
+    <p id="current-date" style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px;"></p>
 
-      <p id="current-date" style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px;"></p>
+    <button onclick="loadUsers()" class="btn-primary">Rafraîchir la liste</button>
+    <button onclick="openCreateUserModal()" class="btn-primary">Créer un utilisateur</button>
 
-        <button onclick="loadUsers()" class="btn-primary">Rafraîchir la liste</button>
-        <button onclick="openCreateUserModal()" class="btn-primary">Créer un utilisateur</button>
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-  <table id="usersTable">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <!-- MODAL UNIQUE : Créer OU Modifier (avec mot de passe) -->
+    <div id="userModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modalTitle">Créer un nouvel Utilisateur</h3>
+            
+            <label>Nom d'utilisateur :</label>
+            <input type="text" id="modalUsername" placeholder="Ex: capitaine_dupont">
 
-  <script>
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = 'login.html';
+            <label>Adresse email :</label>
+            <input type="email" id="modalEmail" placeholder="Ex: dupont@example.com">
 
-    async function loadUsers() {
-      const tbody = document.querySelector('#usersTable tbody');
-      tbody.innerHTML = '<tr><td colspan="3" class="empty">Chargement...</td></tr>';
+            <label id="oldPasswordLabel" style="display: none;">Ancien mot de passe (obligatoire pour changer le mot de passe) :</label>
+            <input type="password" id="modalOldPassword" placeholder="Ancien mot de passe" style="display: none;">
 
-      try {
-        const res = await fetch('http://localhost:3000/api/users', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
+            <label id="newPasswordLabel">Mot de passe :</label>
+            <input type="password" id="modalPassword" placeholder="Min 6 caractères">
 
-        const users = await res.json();
-        tbody.innerHTML = '';
-
-        if (users.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="3" class="empty">Aucun utilisateur trouvé</td></tr>`;
-          return;
-        }
-
-        users.forEach(user => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${user.username}</td>
-            <td>${user.email}</td>
-            <td>
-              <button onclick="deleteUser('${user.email}')" style="background:#ff4444; color:white; padding:5px 10px;">Supprimer</button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="3" class="empty">Erreur lors du chargement</td></tr>`;
-      }
-    }
-
-    async function deleteUser(email) {
-      if (!confirm(`Supprimer l'utilisateur ${email} ?`)) return;
-
-      try {
-        const res = await fetch(`http://localhost:3000/api/users/${email}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-
-        if (res.ok) {
-          alert("Utilisateur supprimé");
-          loadUsers(); // Rafraîchir la liste
-        } else {
-          alert("Erreur lors de la suppression");
-        }
-      } catch (err) {
-        alert("Erreur serveur");
-      }
-    }
-
-    // Charger la liste au démarrage
-    window.onload = loadUsers;
-
-    // Afficher le nom de l'utilisateur connecté
-async function loadUserInfo() {
-    try {
-        const res = await fetch('http://localhost:3000/api/users/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            const user = await res.json();
-            document.getElementById('username-display').textContent = user.username || "Capitaine";
-        }
-    } catch(e) {}
-}
-// Ouvrir le modal
-function openCreateUserModal() {
-    document.getElementById('createUserModal').style.display = 'flex';
-    // Réinitialiser les champs
-    document.getElementById('newUsername').value = '';
-    document.getElementById('newEmail').value = '';
-    document.getElementById('newPassword').value = '';
-}
-
-// Fermer le modal
-function closeUserModal() {
-    document.getElementById('createUserModal').style.display = 'none';
-}
-
-// Créer l'utilisateur
-async function submitCreateUser() {
-    const username = document.getElementById('newUsername').value.trim();
-    const email    = document.getElementById('newEmail').value.trim();
-    const password = document.getElementById('newPassword').value;
-
-    if (!username || !email || !password) {
-        alert("Tous les champs sont obligatoires");
-        return;
-    }
-
-    if (password.length < 6) {
-        alert("Le mot de passe doit contenir au moins 6 caractères");
-        return;
-    }
-
-    try {
-        const res = await fetch('http://localhost:3000/api/users', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                username: username,
-                email: email,
-                password: password
-            })
-        });
-
-        if (res.ok) {
-            alert("✅ Utilisateur créé avec succès !");
-            closeUserModal();
-            loadUsers();        // Rafraîchit la liste
-        } else {
-            const errorData = await res.json().catch(() => ({}));
-            alert(`❌ Erreur : ${errorData.message || "Impossible de créer l'utilisateur"}`);
-        }
-    } catch (err) {
-        console.error(err);
-        alert("Erreur de connexion au serveur");
-    }
-}
-
-// Afficher la date sur le dashboard
-const now = new Date();
-const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-document.getElementById('current-date').textContent = 
-    `Aujourd'hui : ${now.toLocaleDateString('fr-FR', dateOptions)}`;
-  </script>
-  <!-- Modal Créer Utilisateur -->
-<div id="createUserModal" class="modal">
-    <div class="modal-content">
-        <h3>Créer un nouvel Utilisateur</h3>
-        
-        <label>Nom d'utilisateur (username) :</label>
-        <input type="text" id="newUsername" placeholder="Ex: capitaine_dupont" required>
-
-        <label>Adresse email :</label>
-        <input type="email" id="newEmail" placeholder="Ex: dupont@example.com" required>
-
-        <label>Mot de passe :</label>
-        <input type="password" id="newPassword" placeholder="Mot de passe (min 6 caractères)" required>
-
-        <div class="modal-buttons">
-            <button onclick="closeUserModal()" class="btn-secondary">Annuler</button>
-            <button onclick="submitCreateUser()" class="btn-primary">Créer l'utilisateur</button>
+            <div class="modal-buttons">
+                <button onclick="closeUserModal()" class="btn-secondary">Annuler</button>
+                <button onclick="submitUserModal()" class="btn-primary" id="modalSubmitBtn">Créer l'utilisateur</button>
+            </div>
         </div>
     </div>
-</div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        let currentEditingEmail = null;   // Pour savoir si on modifie ou on crée
+
+        async function loadUsers() {
+            const tbody = document.querySelector('#usersTable tbody');
+            tbody.innerHTML = '<tr><td colspan="3" class="empty">Chargement...</td></tr>';
+
+            try {
+                const res = await fetch('http://localhost:3000/api/users', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const users = await res.json();
+                tbody.innerHTML = '';
+
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="empty">Aucun utilisateur trouvé</td></tr>';
+                    return;
+                }
+
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>
+                            <button onclick="editUser('${user.email}', '${user.username}')" style="margin-right:8px;">Modifier</button>
+                            <button onclick="deleteUser('${user.email}')" style="background:#ff4444;color:white;">Supprimer</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="3" class="empty">Erreur de chargement</td></tr>';
+            }
+        }
+
+        // ====================== CRÉER ======================
+        function openCreateUserModal() {
+            currentEditingEmail = null;
+            document.getElementById('modalTitle').textContent = "Créer un nouvel Utilisateur";
+            document.getElementById('modalSubmitBtn').textContent = "Créer l'utilisateur";
+            document.getElementById('oldPasswordLabel').style.display = 'none';
+            document.getElementById('modalOldPassword').style.display = 'none';
+            document.getElementById('newPasswordLabel').textContent = "Mot de passe :";
+
+            // Vider les champs
+            document.getElementById('modalUsername').value = '';
+            document.getElementById('modalEmail').value = '';
+            document.getElementById('modalPassword').value = '';
+            document.getElementById('modalOldPassword').value = '';
+
+            document.getElementById('userModal').style.display = 'flex';
+        }
+
+        // ====================== MODIFIER (y compris mot de passe) ======================
+        function editUser(email, username) {
+            currentEditingEmail = email;
+            document.getElementById('modalTitle').textContent = "Modifier l'Utilisateur";
+            document.getElementById('modalSubmitBtn').textContent = "Enregistrer les modifications";
+            document.getElementById('oldPasswordLabel').style.display = 'block';
+            document.getElementById('modalOldPassword').style.display = 'block';
+            document.getElementById('newPasswordLabel').textContent = "Nouveau mot de passe (laisser vide si pas de changement) :";
+
+            document.getElementById('modalUsername').value = username;
+            document.getElementById('modalEmail').value = email;
+            document.getElementById('modalPassword').value = '';
+            document.getElementById('modalOldPassword').value = '';
+
+            document.getElementById('userModal').style.display = 'flex';
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        // ====================== SOUMISSION (Créer ou Modifier) ======================
+        async function submitUserModal() {
+            const username = document.getElementById('modalUsername').value.trim();
+            const email = document.getElementById('modalEmail').value.trim();
+            const password = document.getElementById('modalPassword').value;
+            const oldPassword = document.getElementById('modalOldPassword').value;
+
+            if (!username || !email) {
+                alert("Username et email sont obligatoires");
+                return;
+            }
+
+            const isEdit = currentEditingEmail !== null;
+
+            try {
+                let url = 'http://localhost:3000/api/users';
+                let method = 'POST';
+                let bodyData = { username, email, password };
+
+                if (isEdit) {
+                    url = `http://localhost:3000/api/users/${currentEditingEmail}`;
+                    method = 'PUT';
+                    bodyData = { username, email };
+
+                    // Si on veut changer le mot de passe
+                    if (password) {
+                        if (!oldPassword) {
+                            alert("L'ancien mot de passe est obligatoire pour le changer");
+                            return;
+                        }
+                        bodyData.oldPassword = oldPassword;
+                        bodyData.password = password;
+                    }
+                } else {
+                    // Création : password obligatoire
+                    if (!password || password.length < 6) {
+                        alert("Le mot de passe est obligatoire et doit faire au moins 6 caractères");
+                        return;
+                    }
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (res.ok) {
+                    alert(isEdit ? "✅ Modifications enregistrées !" : "✅ Utilisateur créé avec succès !");
+                    closeUserModal();
+                    loadUsers();
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    alert("❌ Erreur : " + (err.message || "Action impossible"));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erreur de connexion au serveur");
+            }
+        }
+
+        // ====================== SUPPRESSION ======================
+        async function deleteUser(email) {
+            if (!confirm(`Supprimer l'utilisateur ${email} ?`)) return;
+
+            try {
+                const res = await fetch(`http://localhost:3000/api/users/${email}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (res.ok) {
+                    alert("Utilisateur supprimé");
+                    loadUsers();
+                } else {
+                    alert("Erreur lors de la suppression");
+                }
+            } catch (err) {
+                alert("Erreur serveur");
+            }
+        }
+
+        window.onload = loadUsers;
+    </script>
 </body>
 </html>
