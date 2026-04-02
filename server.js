@@ -36,6 +36,14 @@ app.get('/', (req, res) => {
 const reservationRoutes = require('./routes/reservations');
 app.use('/api/catways/:id/reservations', reservationRoutes);
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
+
+// Documentation Swagger (accessible par tout le monde)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+console.log('📄 Documentation Swagger disponible sur → http://localhost:3000/api-docs');
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
