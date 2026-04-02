@@ -12,13 +12,13 @@
 
     <div class="nav-user">
         <span id="username-display">Utilisateur</span>
-        <button onclick="performLogout()" class="btn-logout">Déconnexion</button>
+        <button onclick="logout()" class="btn-logout">Déconnexion</button>
     </div>
 </nav>
 
 <script>
 // Fonction de déconnexion qui marche partout
-function performLogout() {
+function logout() {
     localStorage.removeItem('token');
     // Optionnel : supprimer aussi le username si tu le stockes
     localStorage.removeItem('username');
