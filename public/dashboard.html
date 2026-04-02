@@ -14,18 +14,14 @@
         .then(response => response.text())
         .then(data => {
             document.body.insertAdjacentHTML('afterbegin', data);
-            
-            // Optionnel : charger le nom d'utilisateur après insertion
-            setTimeout(loadUsernameIfExists, 100);
         })
-        .catch(err => {
-            console.error("Erreur lors du chargement de la navbar :", err);
-        });
+        .catch(err => console.error("Erreur navbar :", err));
 </script>
 
   <h2>Bienvenue sur le Tableau de bord</h2>
-  <p id="date" style="margin-bottom: 30px; opacity: 0.9;"></p>
-  
+
+      <p id="current-date" style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px;"></p>
+
     <div class="card" onclick="window.location.href='catways.html'">
     <h3>📋 Catways</h3>
     <p>Voir et modifier l'état des catways</p>
@@ -82,6 +78,12 @@ async function loadUserInfo() {
         }
     } catch(e) {}
 }
+
+// Afficher la date sur le dashboard
+const now = new Date();
+const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+document.getElementById('current-date').textContent = 
+    `Aujourd'hui : ${now.toLocaleDateString('fr-FR', dateOptions)}`;
   </script>
 </body>
 </html>

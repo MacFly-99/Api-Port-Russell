@@ -1,7 +1,5 @@
 <nav class="navbar">
-    <div class="nav-brand">
-        <strong>🚤 Port Russell</strong>
-    </div>
+    <div class="nav-brand">🚤 Port Russell</div>
     
     <div class="nav-links">
         <a href="dashboard.html" class="nav-item">🏠 Tableau de bord</a>
@@ -11,19 +9,36 @@
     </div>
 
     <div class="nav-user">
-        <span id="username-display">Utilisateur</span>
+        <span id="username-display">Chargement...</span>
         <button onclick="logout()" class="btn-logout">Déconnexion</button>
     </div>
 </nav>
 
 <script>
-// Fonction de déconnexion qui marche partout
-function logout() {
-    localStorage.removeItem('token');
-    // Optionnel : supprimer aussi le username si tu le stockes
-    localStorage.removeItem('username');
-    
-    // Redirection immédiate
-    window.location.href = 'login.html';
-}
+    // Fonction commune pour afficher utilisateur + date
+    async function updateHeader() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // Nom de l'utilisateur
+        try {
+            const res = await fetch('http://localhost:3000/api/users/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const user = await res.json();
+                document.getElementById('username-display').innerHTML = `👤 ${user.username || "Capitaine"}`;
+            }
+        } catch (e) {
+            document.getElementById('username-display').textContent = "👤 Utilisateur";
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+    }
+
+    // Exécuter updateHeader une fois la navbar chargée
+    setTimeout(updateHeader, 300);
 </script>

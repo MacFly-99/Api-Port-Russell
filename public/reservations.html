@@ -8,22 +8,19 @@
 </head>
 <body>
     
-<!-- === NAVBAR COMMUNE === -->
 <script>
     fetch('navbar.html')
         .then(response => response.text())
         .then(data => {
             document.body.insertAdjacentHTML('afterbegin', data);
-            
-            // Optionnel : charger le nom d'utilisateur après insertion
-            setTimeout(loadUsernameIfExists, 100);
         })
-        .catch(err => {
-            console.error("Erreur lors du chargement de la navbar :", err);
-        });
+        .catch(err => console.error("Erreur navbar :", err));
 </script>
 
   <h2>Réservations par Catway</h2>
+
+        <p id="current-date" style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px;"></p>
+
   <div>
     <input type="number" id="catwayNumber" placeholder="Numéro du catway" value="1">
     <button onclick="loadReservations()" class="btn-primary">Charger les réservations</button>
@@ -165,6 +162,11 @@ async function loadUserInfo() {
  }
 }
 
+// Afficher la date sur le dashboard
+const now = new Date();
+const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+document.getElementById('current-date').textContent = 
+    `Aujourd'hui : ${now.toLocaleDateString('fr-FR', dateOptions)}`;
   </script>
   <!-- Modal Créer Réservation -->
 <div id="createReservationModal" class="modal">
